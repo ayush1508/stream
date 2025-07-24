@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamFlix Bot - Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #e50914, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #cccccc;
+            margin-bottom: 30px;
+        }
+
+        .login-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(229, 9, 20, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e50914;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #cccccc;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #e50914;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #e50914;
+            box-shadow: 0 0 0 2px rgba(229, 9, 20, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: #999999;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #e50914, #ff6b6b);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .table th {
+            background: rgba(229, 9, 20, 0.2);
+            font-weight: 600;
+        }
+
+        .table tr:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .status-approved {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .status-rejected {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            color: #28a745;
+        }
+
+        .alert-error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #e50914;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            border-bottom-color: #e50914;
+            color: #e50914;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                flex: 1;
+                text-align: center;
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎬 StreamFlix</div>
+            <div class="subtitle">Admin Dashboard</div>
+        </div>
+
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section">
+            <h2 class="section-title">Admin Login</h2>
+            <div class="form-group">
+                <label class="form-label">Telegram ID</label>
+                <input type="number" id="telegramId" class="form-input" placeholder="Enter your Telegram ID">
+            </div>
+            <button onclick="login()" class="btn btn-primary">Login</button>
+            <div id="loginMessage"></div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="dashboard-section">
+            <!-- Stats Overview -->
+            <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be loaded here -->
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('users')">Users</div>
+                <div class="tab" onclick="showTab('requests')">Access Requests</div>
+                <div class="tab" onclick="showTab('files')">Files</div>
+                <div class="tab" onclick="showTab('logs')">Access Logs</div>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="tab-content active">
+                <div class="section">
+                    <h3 class="section-title">User Management</h3>
+                    <div id="usersContent">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading users...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Access Requests Tab -->
+            <div id="requestsTab" class="tab-content">
+                <div class="section">
+                    <h3 class="section-title">Access Requests</h3>
+                    <div id="requestsContent">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading requests...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Files Tab -->
+            <div id="filesTab" class="tab-content">
+                <div class="section">
+                    <h3 class="section-title">File Management</h3>
+                    <div id="filesContent">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading files...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Access Logs Tab -->
+            <div id="logsTab" class="tab-content">
+                <div class="section">
+                    <h3 class="section-title">Access Logs</h3>
+                    <div id="logsContent">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading logs...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = localStorage.getItem('streamflix_admin_token');
+        let currentTab = 'users';
+
+        // Check if already logged in
+        if (authToken) {
+            showDashboard();
+        }
+
+        async function login() {
+            const telegramId = document.getElementById('telegramId').value;
+            const messageDiv = document.getElementById('loginMessage');
+
+            if (!telegramId) {
+                showMessage(messageDiv, 'Please enter your Telegram ID', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ telegram_id: parseInt(telegramId) })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.token;
+                    localStorage.setItem('streamflix_admin_token', authToken);
+                    showMessage(messageDiv, 'Login successful!', 'success');
+                    setTimeout(showDashboard, 1000);
+                } else {
+                    showMessage(messageDiv, data.error || 'Login failed', 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'Network error: ' + error.message, 'error');
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            loadStats();
+            loadTabContent(currentTab);
+        }
+
+        function logout() {
+            localStorage.removeItem('streamflix_admin_token');
+            authToken = null;
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').style.display = 'none';
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            const response = await fetch(endpoint, { ...defaultOptions, ...options });
+            
+            if (response.status === 401 || response.status === 403) {
+                logout();
+                throw new Error('Authentication failed');
+            }
+
+            return response;
+        }
+
+        async function loadStats() {
+            try {
+                const response = await apiCall('/admin/stats');
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayStats(data);
+                } else {
+                    console.error('Failed to load stats:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function displayStats(data) {
+            const statsGrid = document.getElementById('statsGrid');
+            const overview = data.overview;
+
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${overview.total_users}</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${overview.approved_users}</div>
+                    <div class="stat-label">Approved Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${overview.total_files}</div>
+                    <div class="stat-label">Total Files</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${overview.total_downloads}</div>
+                    <div class="stat-label">Total Downloads</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${overview.total_streams}</div>
+                    <div class="stat-label">Total Streams</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${overview.pending_requests}</div>
+                    <div class="stat-label">Pending Requests</div>
+                </div>
+            `;
+        }
+
+        function showTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+
+            currentTab = tabName;
+            loadTabContent(tabName);
+        }
+
+        async function loadTabContent(tabName) {
+            switch (tabName) {
+                case 'users':
+                    await loadUsers();
+                    break;
+                case 'requests':
+                    await loadRequests();
+                    break;
+                case 'files':
+                    await loadFiles();
+                    break;
+                case 'logs':
+                    await loadLogs();
+                    break;
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await apiCall('/admin/users');
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayUsers(data.users);
+                } else {
+                    document.getElementById('usersContent').innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('usersContent').innerHTML = `<div class="alert alert-error">Error loading users: ${error.message}</div>`;
+            }
+        }
+
+        function displayUsers(users) {
+            const content = document.getElementById('usersContent');
+            
+            if (users.length === 0) {
+                content.innerHTML = '<p>No users found.</p>';
+                return;
+            }
+
+            const tableHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${users.map(user => `
+                            <tr>
+                                <td>${user.telegram_id}</td>
+                                <td>${user.first_name || 'N/A'}</td>
+                                <td>@${user.username || 'N/A'}</td>
+                                <td><span class="status-badge ${user.role === 'admin' ? 'status-approved' : 'status-pending'}">${user.role}</span></td>
+                                <td><span class="status-badge ${user.is_approved ? 'status-approved' : 'status-pending'}">${user.is_approved ? 'Approved' : 'Pending'}</span></td>
+                                <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    ${user.role !== 'admin' ? `
+                                        <button class="btn btn-secondary" onclick="toggleUserApproval(${user.id}, ${!user.is_approved})">
+                                            ${user.is_approved ? 'Revoke' : 'Approve'}
+                                        </button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            content.innerHTML = tableHTML;
+        }
+
+        async function loadRequests() {
+            try {
+                const response = await apiCall('/admin/access-requests?status=pending');
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayRequests(data.requests);
+                } else {
+                    document.getElementById('requestsContent').innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('requestsContent').innerHTML = `<div class="alert alert-error">Error loading requests: ${error.message}</div>`;
+            }
+        }
+
+        function displayRequests(requests) {
+            const content = document.getElementById('requestsContent');
+            
+            if (requests.length === 0) {
+                content.innerHTML = '<p>No pending access requests.</p>';
+                return;
+            }
+
+            const tableHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Purpose</th>
+                            <th>Requested</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${requests.map(request => `
+                            <tr>
+                                <td>${request.name}</td>
+                                <td>@${request.user.username || 'N/A'}</td>
+                                <td>${request.purpose}</td>
+                                <td>${new Date(request.requested_at).toLocaleDateString()}</td>
+                                <td>
+                                    <button class="btn btn-primary" onclick="approveRequest(${request.id})">Approve</button>
+                                    <button class="btn btn-secondary" onclick="rejectRequest(${request.id})">Reject</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            content.innerHTML = tableHTML;
+        }
+
+        async function loadFiles() {
+            try {
+                const response = await apiCall('/admin/files');
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayFiles(data.files);
+                } else {
+                    document.getElementById('filesContent').innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('filesContent').innerHTML = `<div class="alert alert-error">Error loading files: ${error.message}</div>`;
+            }
+        }
+
+        function displayFiles(files) {
+            const content = document.getElementById('filesContent');
+            
+            if (files.length === 0) {
+                content.innerHTML = '<p>No files found.</p>';
+                return;
+            }
+
+            const tableHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Uploader</th>
+                            <th>Downloads</th>
+                            <th>Streams</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${files.map(file => `
+                            <tr>
+                                <td>${file.original_filename}</td>
+                                <td><span class="status-badge status-pending">${file.file_type}</span></td>
+                                <td>${formatFileSize(file.file_size)}</td>
+                                <td>${file.uploader.username || file.uploader.first_name || 'Unknown'}</td>
+                                <td>${file.download_count}</td>
+                                <td>${file.stream_count}</td>
+                                <td>${new Date(file.uploaded_at).toLocaleDateString()}</td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="deleteFile(${file.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            content.innerHTML = tableHTML;
+        }
+
+        async function loadLogs() {
+            try {
+                const response = await apiCall('/admin/access-logs');
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayLogs(data.logs);
+                } else {
+                    document.getElementById('logsContent').innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('logsContent').innerHTML = `<div class="alert alert-error">Error loading logs: ${error.message}</div>`;
+            }
+        }
+
+        function displayLogs(logs) {
+            const content = document.getElementById('logsContent');
+            
+            if (logs.length === 0) {
+                content.innerHTML = '<p>No access logs found.</p>';
+                return;
+            }
+
+            const tableHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>File</th>
+                            <th>Action</th>
+                            <th>IP Address</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${logs.map(log => `
+                            <tr>
+                                <td>${log.user.username || log.user.first_name || 'Unknown'}</td>
+                                <td>${log.file.original_filename}</td>
+                                <td><span class="status-badge status-pending">${log.action}</span></td>
+                                <td>${log.ip_address || 'N/A'}</td>
+                                <td><span class="status-badge ${log.success ? 'status-approved' : 'status-rejected'}">${log.success ? 'Success' : 'Failed'}</span></td>
+                                <td>${new Date(log.accessed_at).toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            content.innerHTML = tableHTML;
+        }
+
+        async function toggleUserApproval(userId, approve) {
+            try {
+                const response = await apiCall(`/admin/users/${userId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ is_approved: approve })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    loadUsers(); // Reload users
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function approveRequest(requestId) {
+            try {
+                const response = await apiCall(`/admin/access-requests/${requestId}/approve`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    loadRequests(); // Reload requests
+                    loadStats(); // Reload stats
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function rejectRequest(requestId) {
+            const notes = prompt('Rejection reason (optional):');
+            
+            try {
+                const response = await apiCall(`/admin/access-requests/${requestId}/reject`, {
+                    method: 'POST',
+                    body: JSON.stringify({ notes: notes || '' })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    loadRequests(); // Reload requests
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function deleteFile(fileId) {
+            if (!confirm('Are you sure you want to delete this file?')) {
+                return;
+            }
+
+            try {
+                const response = await apiCall(`/admin/files/${fileId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    loadFiles(); // Reload files
+                    loadStats(); // Reload stats
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function showMessage(element, message, type) {
+            element.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        // Auto-refresh data every 30 seconds
+        setInterval(() => {
+            if (authToken && document.getElementById('dashboardSection').style.display !== 'none') {
+                loadStats();
+                loadTabContent(currentTab);
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
+
