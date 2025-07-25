@@ -9,6 +9,7 @@ from src.models.access import AccessRequest, RequestStatus
 from src.services.file_service import FileService
 from src.services.auth_service import AuthService
 from datetime import datetime
+from types import SimpleNamespace
 
 # Configure logging
 logging.basicConfig(
@@ -360,12 +361,12 @@ Need help? Contact an admin! 👨‍💼
         elif data.startswith("reject_"):
             request_id = int(data.split("_")[1])
             await self.reject_access_request(request_id, user, query)
-
+   
     async def get_or_create_user(self, telegram_user):
         """Get or create user from Telegram user object"""
         with self.flask_app.app_context():
             user = User.query.filter_by(telegram_id=telegram_user.id).first()
-            
+
             if not user:
                 user = User(
                     telegram_id=telegram_user.id,
@@ -382,8 +383,18 @@ Need help? Contact an admin! 👨‍💼
                 user.last_name = telegram_user.last_name
                 user.last_active = datetime.utcnow()
                 db.session.commit()
-            
-            return user
+
+            # Return a simple copy (not tied to SQLAlchemy session)
+            return SimpleNamespace(
+                id=user.id,
+                telegram_id=user.telegram_id,
+                username=user.username,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                is_admin=user.is_admin,
+                is_approved=user.is_approved,
+                can_access_files=user.can_access_files
+            )
 
     def format_file_size(self, size_bytes):
         """Format file size in human readable format"""
@@ -588,6 +599,17 @@ Need help? Contact an admin! 👨‍💼
                 logger.error(f"Failed to notify user {user.telegram_id}: {e}")
             
             await query.edit_message_text(f"❌ Access request rejected for {request.name}")
+
+    async def revoke_access_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Dummy handler for /revoke_access"""
+        await update.message.reply_text("Your access has been revoked (this is a placeholder).")
+
+    async def make_admin_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text("👑 Make admin feature coming soon.")
+
+    async def remove_admin_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text("❌ Remove admin feature coming soon.")
+
 
     def run_polling(self):
         """Run the bot in polling mode"""

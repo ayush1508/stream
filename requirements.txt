@@ -1,3 +1,5 @@
+psycopg2-binary
+python-dotenv
 aiolimiter==1.2.1
 anyio==4.9.0
 APScheduler==3.11.0
