@@ -10,6 +10,9 @@ import threading
 import logging
 from src.main import create_app
 from src.bot.telegram_bot import StreamFlixBot
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(

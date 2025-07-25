@@ -2,16 +2,11 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from enum import Enum
 
-db = SQLAlchemy()
+db = SQLAlchemy() # Assuming db is initialized here or imported from a central place
 
 class UserRole(Enum):
     USER = "user"
     ADMIN = "admin"
-
-class RequestStatus(Enum):
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -25,9 +20,29 @@ class User(db.Model):
     last_active = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Relationships
-    uploaded_files = db.relationship('File', backref='uploader', lazy=True)
-    access_requests = db.relationship('AccessRequest', backref='user', lazy=True)
-    access_logs = db.relationship('AccessLog', backref='user', lazy=True)
+    uploaded_files = db.relationship(
+        'File', backref='uploader', lazy=True
+    )
+
+    # Relationship for requests made by this user
+    requested_accesses = db.relationship(
+        'AccessRequest', 
+        backref='requester', # This backref will be on AccessRequest model
+        lazy=True, 
+        foreign_keys='AccessRequest.user_id' # Link to AccessRequest.user_id
+    )
+
+    # Relationship for requests processed by this user (if they are an admin)
+    processed_accesses = db.relationship(
+        'AccessRequest', 
+        backref='processor', # This backref will be on AccessRequest model
+        lazy=True, 
+        foreign_keys='AccessRequest.processed_by' # Link to AccessRequest.processed_by
+    )
+
+    access_logs = db.relationship(
+        'AccessLog', backref='user', lazy=True
+    )
 
     def __repr__(self):
         return f'<User {self.username or self.telegram_id}>'
@@ -50,3 +65,4 @@ class User(db.Model):
 
     def can_access_files(self):
         return self.is_admin() or self.is_approved
+

@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  streamflix-bot:
+    build: .
+    container_name: streamflix-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5001:5000"
+    environment:
+      - FLASK_ENV=production
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - ADMIN_TELEGRAM_IDS=${ADMIN_TELEGRAM_IDS}
+      - DATABASE_URL=postgresql://streamflix:${DB_PASSWORD}@db:5432/streamflix
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./thumbnails:/app/thumbnails
+      - ./logs:/app/logs
+    depends_on:
+      - db
+    command: ["/wait-for-it.sh", "db:5432", "--", "python", "run_bot.py"]
+    networks:
+      - streamflix-network
+
+  db:
+    image: postgres:15
+    container_name: streamflix-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=streamflix
+      - POSTGRES_USER=streamflix
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - streamflix-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: streamflix-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - streamflix-bot
+    networks:
+      - streamflix-network
+
+volumes:
+  postgres_data:
+
+networks:
+  streamflix-network:
+    driver: bridge
